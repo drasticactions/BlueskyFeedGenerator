@@ -3,11 +3,13 @@
 # dotnet 
 */.vscode
 */.vs
+*/.idea
 */bin
 */obj
 */packages
 .vscode/*
 .vs/*
+.idea/*
 bin/*
 obj/*
 

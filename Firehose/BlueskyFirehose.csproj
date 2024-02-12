@@ -2,24 +2,24 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>  
-    <PackageReference Include="FishyFlip" Version="1.1.49-alpha" />  
-    <PackageReference Include="LemmaSharp-std" Version="1.0.1" />  
-    <PackageReference Include="LemmaSharpPreBuilt-std" Version="1.0.1" />  
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.11">
+    <PackageReference Include="FishyFlip" />  
+    <PackageReference Include="LemmaSharp-std" />  
+    <PackageReference Include="LemmaSharpPreBuilt-std" />  
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>  
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />  
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />  
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />  
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />  
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />  
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />  
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"  />  
+    <PackageReference Include="Microsoft.Extensions.Hosting"  />  
+    <PackageReference Include="Microsoft.Extensions.Logging"  />  
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />  
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
 
   <ItemGroup>
