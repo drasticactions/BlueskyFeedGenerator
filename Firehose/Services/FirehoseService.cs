@@ -72,7 +72,7 @@ public class FirehoseService : BackgroundService
 
     private void HandleSubscribedRepoMessage(object? sender, SubscribedRepoEventArgs e)
     {
-        if (e.Message.Record?.Type == "app.bsky.feed.post")
+        if (e.Message.Record?.Type == Constants.FeedType.Post)
         {
             eventQueue.Enqueue(e);
         }
