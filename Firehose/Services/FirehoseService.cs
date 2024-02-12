@@ -26,7 +26,8 @@ public class FirehoseService : BackgroundService
     private ConcurrentQueue<SubscribedRepoEventArgs> eventQueue = new();
     private static SemaphoreSlim reconnectSemaphore = new SemaphoreSlim(1, 1);
     private ATProtocol client;
-
+    private ATWebSocketProtocol wsClient;
+    
     // Configuration options
     private readonly int EventChunkSize = 100;
     private readonly TimeSpan ProcessingTimeout = TimeSpan.FromSeconds(30);
@@ -46,17 +47,20 @@ public class FirehoseService : BackgroundService
             .EnableAutoRenewSession(true)
             .WithInstanceUrl(new Uri(serviceConfig.Value.Url))
             .Build();
+
+        wsClient = new ATWebSocketProtocolBuilder()
+            .Build();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            client.OnSubscribedRepoMessage += HandleSubscribedRepoMessage;
-            client.OnConnectionUpdated += (sender, e) => HandleConnectionUpdated(sender, e, stoppingToken);
+            wsClient.OnSubscribedRepoMessage += HandleSubscribedRepoMessage;
+            wsClient.OnConnectionUpdated += (sender, e) => HandleConnectionUpdated(sender, e, stoppingToken);
 
             await client.Server.CreateSessionAsync(_serviceConfig.Value.LoginIdentifier, _serviceConfig.Value.Token, stoppingToken);
-            await client.StartSubscribeReposAsync(stoppingToken);
+            await wsClient.StartSubscribeReposAsync(stoppingToken);
 
             await ProcessLoop(stoppingToken);
         }
@@ -121,21 +125,23 @@ public class FirehoseService : BackgroundService
             _logger.LogInformation("Attempting to reconnect");
             try
             {
-                await client.StopSubscriptionAsync(cancellationToken);
-                client.OnSubscribedRepoMessage -= HandleSubscribedRepoMessage;
-                client.OnConnectionUpdated -= (sender, e) => HandleConnectionUpdated(sender, e, cancellationToken);
+                await wsClient.StopSubscriptionAsync(cancellationToken);
+                wsClient.OnSubscribedRepoMessage -= HandleSubscribedRepoMessage;
+                wsClient.OnConnectionUpdated -= (sender, e) => HandleConnectionUpdated(sender, e, cancellationToken);
+                wsClient.Dispose();
                 client.Dispose();
                 // replace client with a new instance
                 client = new ATProtocolBuilder()
                     .EnableAutoRenewSession(true)
                     .WithInstanceUrl(new Uri(_serviceConfig.Value.Url))
                     .Build();
-
+                wsClient = new ATWebSocketProtocolBuilder()
+                    .Build();
                 await client.Server.CreateSessionAsync(_serviceConfig.Value.LoginIdentifier, _serviceConfig.Value.Token, cancellationToken);
-                client.OnSubscribedRepoMessage += HandleSubscribedRepoMessage;
-                client.OnConnectionUpdated += (sender, e) => HandleConnectionUpdated(sender, e, cancellationToken);
+                wsClient.OnSubscribedRepoMessage += HandleSubscribedRepoMessage;
+                wsClient.OnConnectionUpdated += (sender, e) => HandleConnectionUpdated(sender, e, cancellationToken);
 
-                await client.StartSubscribeReposAsync(cancellationToken);
+                await wsClient.StartSubscribeReposAsync(cancellationToken);
                 _logger.LogInformation("Reconnected");
                 break;
             }
@@ -237,7 +243,7 @@ public class FirehoseService : BackgroundService
         {
             try
             {
-                if (e.Message.Record?.Type == "app.bsky.feed.post" && e.Message.Record is FishyFlip.Models.Post post)
+                if (e.Message.Record?.Type == Constants.FeedType.Post && e.Message.Record is FishyFlip.Models.Post post)
                 {
                     var op = e.Message.Commit!.Ops![0];
 
